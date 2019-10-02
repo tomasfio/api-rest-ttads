@@ -1,58 +1,43 @@
 import { Router } from "express";
 const router = Router();
 
-//  Database connection
-import { connect } from "../database";
-import { ObjectId } from "mongodb";
+const catModel = require('../models/categoria.model');
 
 //  categoria/
 router.get('/', async (req, res) =>{
-    const db = await connect();
-    const result = await db.collection('categoria').find({}).toArray();
-    console.log(result);
-    res.json(result).status(200);
+    const result = await catModel.find({});
+    res.status(200).json({"Categorias": result}).status(200);
 });
 
 router.get('/:id', async (req,res) => {
     const { id } = req.params;
-    const db = await connect();
-    const result = await db.collection('categoria').findOne({_id : ObjectId(id)});
+    const result = await catModel.findById(id);
     res.json(result);
 })
 
 router.post('/', async (req,res) => {
-    const db = await connect();
-    const categoria  = {
-        name: req.body.name,
-        descripcion: req.body.descripcion
-    };
-    const result = await db.collection('categoria').insert(categoria);
-    res.json(result.ops[0]);
+    const catNew = new catModel(req.body);
+    const result = await catNew.save();
+    res.status(201).json(result);
+});
+
+router.put('/:id', async (req,res) => {
+    const { id } = req.params;
+    const updateCategoria = req.body;
+    const oldCat = await catModel.findByIdAndUpdate(id, updateCategoria);
+
+    res.json({
+        message: `La categoria con el id ${id} se ha actualizado exitosamente`
+    });
 });
 
 router.delete('/:id', async (req, res) => {
     const { id } = req.params;
-    const db = await connect();
-    const result = await db.collection('categoria').deleteOne({ _id : ObjectId(id)});
+    const result = await catModel.findByIdAndDelete(id);
 
     res.json({
         message: `Categora ${id} eliminada`,
         result
-    });
-})
-
-router.put('/:id', async (req,res) => {
-    const { id } = req.params;
-    const updateCategoria = {
-        name: req.body.name,
-        descripcion: req.body.descripcion
-    };
-
-    const db = await connect();
-    await db.collection('categoria').updateOne({ _id : ObjectId(id)}, { $set: updateCategoria});
-
-    res.json({
-        message: `La categoria con el id ${id} se ha actualizado exitosamente`
     });
 });
 

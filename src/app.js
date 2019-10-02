@@ -8,6 +8,9 @@ const app = express();
 //  Import Routes
 import CategoriaRouter from "./routes/categoria.routes";
 
+//  Database
+mongoose.connect('mongodb://localhost:27017/node-restapi');
+
 //  Settings
 app.set('port', process.env.PORT || 3000);
 
